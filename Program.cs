@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -7,6 +7,10 @@ namespace Seventeen
     internal class Program
     {
         private static Random _random = new Random();
+
+        private const string InvalidInput =
+            "<Invalid input. Please enter a menu option, indicated by the number in brackets.>\r\n" +
+            "\tPress enter to continue...";
         
         public static void Main(string[] args)
         {
@@ -69,19 +73,11 @@ namespace Seventeen
 
             if (int.TryParse(Console.ReadLine(), out int option))
             {
+                if(!Enum.IsDefined(typeof(CoinSides), option)) ResetRound(InvalidInput);
                 Console.Clear();
-                int coinFlip = _random.Next(0, 50);
-                bool playerFirst;
-                if (coinFlip > 25)
-                {
-                    Console.WriteLine("The coin faces \"heads up\".");
-                    playerFirst = option == 1;
-                }
-                else
-                {
-                    Console.WriteLine("The coin faces \"tails up\".");
-                    playerFirst = option == 2;
-                }
+                bool playerFirst = (int) CoinFlip(ref _random) == option;
+                string coinSide = option == 1 ? "heads up" : "tails up";
+                Console.WriteLine($"The coin faces \"{coinSide}\".");
 
                 string firstTurn = playerFirst ? "You will" : "I shall";
                 Console.WriteLine($"{firstTurn} go first.\r\n" +
@@ -105,10 +101,25 @@ namespace Seventeen
                 //Finish Control stuffs.
             }
             
-            Console.WriteLine("<Invalid input. Please enter a menu option, indicated by the number in brackets.>\r\n" +
-                              "\tPress enter to continue...");
+            ResetRound(InvalidInput);
+        }
+
+        public static void ResetRound(string reason)
+        {
+            Console.WriteLine(reason);
             Console.ReadLine();
             BeginRound();
+        }
+
+        public static CoinSides CoinFlip(ref Random rand)
+        {
+            return rand.Next(0, 25) > 25 ? CoinSides.Heads : CoinSides.Tails;
+        }
+
+        public enum CoinSides
+        {
+            Heads = 1,
+            Tails = 2
         }
     }
 
